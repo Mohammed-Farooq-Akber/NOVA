@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <title>Banana Ripeness Detection</title>
+</head>
+<body>
+    <h1>Banana Ripeness Detection</h1>
+    <div>
+        <img src="{% url 'video_feed' %}" alt="Video feed" style="width: 100%; max-width: 600px; border: 2px solid grey; border-radius: 10px;">
+    </div>
+{% endblock content %}
