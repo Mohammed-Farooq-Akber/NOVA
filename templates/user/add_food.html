@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voice Input Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .field-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 8px; }
+        .voice-btn { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter Food Details</h1>
+        <form method="POST" action="{% url 'voice_input_form' %}">
+            {% csrf_token %}
+            <div class="field-group">
+                <label for="food_name">Food Name</label>
+                <input type="text" id="food_name" name="food_name" placeholder="Say the food name">
+            </div>
+
+            <div class="field-group">
+                <label for="expiry_date">Expiry Date</label>
+                <input type="text" id="expiry_date" name="expiry_date" placeholder="Say the expiry date">
+            </div>
+
+            <button type="button" class="voice-btn" onclick="startRecognition()">🎤 Voice Input</button>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        function startRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const words = transcript.split(" ");
+
+                // Assign the first word to the food name field
+                document.getElementById("food_name").value = words[0] || "";
+
+                // Assign the rest to expiry date field
+                const dateInput = words.slice(1).join(" ");
+                document.getElementById("expiry_date").value = dateInput;
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error: ", event.error);
+            };
+
+            recognition.onend = function() {
+                console.log("Speech recognition ended.");
+            };
+        }
+    </script>
+</body>
+</html>
