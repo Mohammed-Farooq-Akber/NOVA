@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card">
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card w-75">
         <div class="card-body">
     <h2>Food Donation Form</h2>
 
@@ -13,7 +13,7 @@
         {% endfor %}
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
+    <form class="container" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
         <div class="form-group">
@@ -49,10 +49,10 @@
 
         <div class="form-group">
             <label for="food_image">Food Image (optional)</label>
-            <input type="file" class="form-control-file" id="food_image" name="food_image">
+            <input type="file" class="form-control-file btn btn-outline-primary w-25" id="food_image" name="food_image">
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit Donation</button>
+        <button type="submit" class="btn btn-primary btn-2">Submit Donation</button>
     </form>
 </div>
 {% endblock %}

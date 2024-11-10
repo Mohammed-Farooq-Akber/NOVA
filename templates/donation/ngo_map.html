@@ -10,7 +10,7 @@
     .buttons {
       position: absolute;
       margin: 5px;
-      z-index: 1;
+      z-index: 3;
       background-color: #FFF;
       padding: 15px;
       border-radius: 5px;
@@ -24,7 +24,7 @@
       margin: 5px 0;
     }
     #googleMap {
-      width: 100vw;
+      {% comment %} width: 100vw; {% endcomment %}
       height: 100vh;
     }
   </style>
@@ -32,7 +32,7 @@
 <body>
     <div class="container md-4">
   <div class="buttons">
-    <button data-target="group-1">Group 1</button>
+    <button data-target="group-1 btn btn-3 btn-primary">Group 1</button>
     <button data-target="group-2">Group 2</button>
     <ul>
       <li><a href="#">Children NGO Worli</a></li>
@@ -44,7 +44,7 @@
   </div>
 <div class="card">
     <div class="card-body">
-  <div id="googleMap"></div>
+        <div id="googleMap"></div>
 
   <script>
     var markers = {

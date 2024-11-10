@@ -21,15 +21,13 @@
                             <input type="text" class="form-control form-control-lg" id="expiry_date" name="expiry_date" placeholder="Say the expiry date" value="{{ expiry_date }}" required>
                         </div>
 
-                        <!-- Voice and OCR Buttons Side-by-Side -->
-                        <div class="d-flex justify-content-center mb-4">
-                            <button type="button" class="btn btn-info mr-2" onclick="startRecognition()">🎤 Voice Input</button>
-                      
+                  <!-- Voice and OCR Buttons Side-by-Side -->
+<div class="d-flex justify-content-center mb-4">
+    <button type="button" class="btn btn-info btn-lg mx-2" onclick="startRecognition()">🎤 Voice Input</button>
+    <button type="button" class="btn btn-secondary btn-lg mx-2" onclick="document.getElementById('image').click()">📷 Select Image</button>
+    <input type="file" id="image" name="image" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage()">
+</div>
 
-                                    <!-- Custom Image Upload Button -->
-                        <button type="button" class="btn btn-secondary btn-lg" onclick="document.getElementById('image').click()">📷 Select Image</button>
-                        <input type="file" id="image" name="image" accept="image/*" capture="environment" style="display: none;" onchange="uploadImage()">
-                    </div>
 
                         <!-- Submit Button Centered -->
                         <div class="text-center">
@@ -89,7 +87,9 @@
             const imageInput = document.getElementById('image');
             const formData = new FormData();
             formData.append('image', imageInput.files[0]);
-
+            formData.append('food_name', document.getElementById('food_name').value); // Optional: add other form data
+            formData.append('expiry_date', document.getElementById('expiry_date').value); // Optional: add other form data
+        
             // Send image to backend for processing
             fetch("{% url 'upload_image_and_voice_input' %}", {
                 method: 'POST',
@@ -103,10 +103,15 @@
                 if (data.expiry_date) {
                     document.getElementById('expiry_date').value = data.expiry_date;
                 }
+                // Redirect to the dashboard if redirect_url is provided
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
             })
             .catch(error => {
                 console.error('Error uploading image:', error);
             });
         }
+        
     </script>
 {% endblock content %}
