@@ -10,6 +10,128 @@
   <title>
     Argon Dashboard 3 by Creative Tim
   </title>
+  <style>
+        
+    /* Cart icon at bottom-right corner */
+    .cart-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 24px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Cart window styling */
+    .cart-popup {
+        display: none;
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 400px;
+        max-height: 500px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
+        flex-direction: column;
+        z-index: 1000;
+    }
+    
+    .cart-header {
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-size: 18px;
+    }
+
+    .cart-top-text {
+        padding: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .cart-box {
+        padding: 15px;
+        height: 400px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cart-item {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .cart-item img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .cart-item-name {
+        flex-grow: 1;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .cart-item-qty {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cart-item-qty button {
+        background-color: #f0f0f0;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .cart-item-qty span {
+        font-size: 16px;
+    }
+
+    .cart-item-price {
+        font-size: 16px;
+        color: #007bff;
+    }
+
+    .cart-footer {
+        padding: 10px;
+        background: #f9f9f9;
+        text-align: center;
+        border-top: 1px solid #ddd;
+    }
+
+    .cart-footer button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+  </style>
+  
   <!--     Fonts and icons     -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
   <!-- Nucleo Icons -->
@@ -19,6 +141,7 @@
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
   <link id="pagestyle" href="{% static 'assets/css/argon-dashboard.css' %}?v=2.1.0" rel="stylesheet" />
+  
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
@@ -117,8 +240,10 @@
       <a class="btn btn-primary btn-sm mb-0 w-100" href="https://www.creative-tim.com/product/argon-dashboard-pro?ref=sidebarfree" type="button">Upgrade to pro</a>
     </div>
   </aside>
+  
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
+    
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
       <div class="container-fluid py-1 px-3">
         <nav aria-label="breadcrumb">
@@ -234,14 +359,31 @@
       </div>
     </nav>
     <!-- End Navbar -->
+      <!-- Chat Popup Window -->
+      
+      <div class="cart-icon" onclick="toggleCart()">🛒</div>
+
+    <!-- Cart Popup Window -->
+    <div class="cart-popup" id="cart-popup">
+        <div class="cart-header">Optimized Cart</div>
+        
+        <!-- Add the "Next month" text at the top -->
+        <div class="cart-top-text">Next month: December</div>
+
+        <div class="cart-box" id="cart-box">
+            <!-- Cart items will appear here -->
+        </div>
+        
+    </div>
     <div class="container-fluid py-4">
         <div class="row">
        
       {% block content %}
 
       {% endblock content %}
-
+      
     </div>
+    
 </div> 
 </div>
       
@@ -409,6 +551,59 @@
     });
   </script>
   <script>
+    function toggleCart() {
+      const cartPopup = document.getElementById("cart-popup");
+      cartPopup.style.display = cartPopup.style.display === "none" ? "flex" : "none";
+      fetchCartItems();  // Fetch items when cart is toggled
+  }
+
+  // Fetch cart items from the server
+  async function fetchCartItems() {
+      try {
+          const response = await fetch('/calculate/');
+          if (response.ok) {
+              const cartData = await response.json();
+              displayCartItems(cartData); // Pass the data to display function
+          } else {
+              console.error('Failed to fetch cart items');
+          }
+      } catch (error) {
+          console.error('Error fetching cart items:', error);
+      }
+  }
+
+  // Display cart items
+  function displayCartItems(cartData) {
+      const cartBox = document.getElementById("cart-box");
+      cartBox.innerHTML = '';  // Clear the existing cart items
+      cartData.forEach(item => {
+          const itemElement = document.createElement('div');
+          itemElement.classList.add('cart-item');
+
+          itemElement.innerHTML = `
+              <img src="${item.image_url}" alt="${item.name}" width="50" height="50" />
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-qty">
+                  <button onclick="changeQuantity('${item.name}', -1)">-</button>
+                  <span>${item.quantity}</span>
+                  <button onclick="changeQuantity('${item.name}', 1)">+</button>
+              </div>
+          `;
+          cartBox.appendChild(itemElement);
+      });
+  }
+
+  // Change quantity of cart item
+  function changeQuantity(itemName, change) {
+      const itemElement = Array.from(document.getElementsByClassName('cart-item')).find(el => 
+          el.querySelector('.cart-item-name').textContent === itemName
+      );
+      const quantityElement = itemElement.querySelector('.cart-item-qty span');
+      let currentQuantity = parseInt(quantityElement.textContent);
+      currentQuantity += change;
+      if (currentQuantity < 1) currentQuantity = 1; // Prevent negative or zero quantity
+      quantityElement.textContent = currentQuantity;
+  }
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
       var options = {

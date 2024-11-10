@@ -10,19 +10,7 @@ def hello(request):
 
 
 def get_street_network(area):
-    # Set a cache key
-    cache_key = f"street_network_{area}"
-    
-    # Try to get data from the cache
-    street_network = cache.get(cache_key)
-    
-    # If not cached, fetch it and store it in the cache
-    if not street_network:
-        street_network = ox.graph_from_place(area, network_type='walk')
-        # Cache the result for a period (e.g., 24 hours)
-        cache.set(cache_key, street_network, timeout=86400)
-    
-    return street_network
+    return ox.graph_from_place(area, network_type='walk')
 
 def load_sample_food_banks():
     data = {
@@ -182,3 +170,98 @@ def create_map(gdf, user_location=None, max_distance=None, route_details=None):
 
 def calculate_distance(point1, point2):
     return geodesic(point1, point2).kilometers
+
+# Django Form for handling user inputs
+class LocationForm(forms.Form):
+    user_address = forms.CharField(label="Enter your address:", required=True)
+    max_distance = forms.IntegerField(label="Maximum distance (km):", min_value=1, max_value=20, initial=5)
+    selected_food_bank = forms.ChoiceField(label="Select a food bank to get directions:", required=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Load food bank names for selection
+        df = load_sample_food_banks()
+        gdf = create_geopandas_df(df)
+        self.fields['selected_food_bank'].choices = [(name, name) for name in gdf['name']]
+
+def generate_map(request):
+    # Load the data once when the view is accessed
+    G = get_street_network('Manhattan, New York, USA')
+    print(1)
+    df = load_sample_food_banks()
+    gdf = create_geopandas_df(df)
+
+    # Render the initial form
+    if request.method == "GET":
+        return render(request, 'dead/location_form.html', {'food_banks': gdf['name'].tolist()})
+
+    # Handle form submission using AJAX
+    elif request.method == "POST":
+        user_address = request.POST.get("user_address")
+        max_distance = int(request.POST.get("max_distance"))
+        selected_food_bank = request.POST.get("selected_food_bank")
+        
+        user_coords = geocode_address(user_address) if user_address else None
+        dest_coords = gdf.loc[gdf['name'] == selected_food_bank, 'coordinates'].values[0] if selected_food_bank else None
+        print(2)
+        # Generate the route details and map if both locations are valid
+        if user_coords and dest_coords:
+            route_details = get_route(G, user_coords, dest_coords)
+            map_view = create_map(gdf, user_location=user_coords, max_distance=max_distance, route_details=route_details)
+            print(3)
+            # Convert Folium map to HTML
+            map_html = map_view._repr_html_()
+            return JsonResponse({'map_html': map_html, 'status': 'success'})
+
+        return JsonResponse({'status': 'error', 'message': 'Unable to find location or route'})
+    
+
+from user.models import FoodItem, FoodItemPurchase
+
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
+from statistics import mean
+
+# Assuming `FoodItem` and `FoodItemPurchase` models are defined as above
+
+def calculate(request):
+    # Step 1: Get all food items from the FoodItem model
+    food_items = FoodItem.objects.all()
+
+    # Step 2: Prepare a list to hold the calculated data for each item
+    result = []
+
+    for food_item in food_items:
+        # Step 3: Retrieve monthly purchase data for the specific food item
+        monthly_data = (
+            FoodItemPurchase.objects
+            .filter(food_item=food_item)
+            .values('year_bought', 'month_bought')  # Group by year and month
+            .annotate(
+                total_bought=Coalesce(Sum('quantity_bought'), 0),
+                total_wasted=Coalesce(Sum('amount_wasted'), 0),
+                net_consumed=F('total_bought') - F('total_wasted')
+            )
+        )
+
+        # Step 4: Calculate net consumption for each month and get the mean
+        monthly_consumption = [entry['net_consumed'] for entry in monthly_data]
+        optimal_consumption = int(mean(monthly_consumption)) if monthly_consumption else 0
+
+        # Step 5: Append the item name and its optimal consumption to the result list
+        result.append({
+            'name': food_item.name,
+            'quantity': optimal_consumption,
+            'image_url': food_item.image.url if food_item.image else None
+        })
+    print(result)
+
+    # Step 6: Return the result as a JSON response
+    return JsonResponse(result, safe=False)
+
+# Render the main chatbot page
+def cart(request):
+    return render(request, "dead/cart.html")
+
+def spline(request):
+    return render(request, 'dead/spline.html')
