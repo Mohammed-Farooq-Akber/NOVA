@@ -1,23 +1,9 @@
 from django.shortcuts import render, HttpResponse
-import streamlit as st
-import pandas as pd
-import geopandas as gpd
-import folium
-from django.core.cache import cache
-from streamlit_folium import st_folium
-from googlemaps import Client
-from shapely.geometry import Point
-import numpy as np
-from geopy.distance import geodesic
-from folium.plugins import MarkerCluster
-import osmnx as ox
-import networkx as nx
+
 from datetime import datetime
 import os
 
 
-GOOGLE_API_KEY = "AIzaSyBfq8do7QgxgCUQrZRxecCsjK2JHkPMJB8"
-gmaps = Client(key=GOOGLE_API_KEY)
 # Create your views here.
 def hello(request):
     return HttpResponse("Hello")
