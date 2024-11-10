@@ -44,6 +44,7 @@ from .models import FoodItem
 logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
 
+load_dotenv()
 # Access the environment variables
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')# Fetch the GEMINI_API_KEY from environment variables
