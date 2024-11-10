@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="card">
+        <div class="card-body">
+  <div class="card card-blog card-plain" style="width: 600px;"> <!-- Increased the width to 600px -->
+    <div class="position-relative">
+      <a class="d-block blur-shadow-image">
+        <img src="https://images.unsplash.com/photo-1593642634402-b0eb5e2eebc9?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=1920&amp;q=80" alt="img-blur-shadow" class="img-fluid shadow border-radius-lg">
+      </a>
+    </div>
+    <div class="card-body px-4 pt-4"> <!-- Added more padding -->
+      <p class="text-gradient text-primary text-gradient font-weight-bold text-sm text-uppercase">Enterprise</p>
+      <a href="javascript:;">
+        <h4 class="text-center">
+          Siri brings hands-free TV to more devices
+        </h4>
+      </a>
+      <p class="text-center">
+        Siri's latest trick is offering a hands-free TV viewing experience, that will allow consumers to turn on or off their television, change inputs, fast forward, rewind and more, without having to first invoke a specific skill, or even press a button on their remote.
+      </p>
+      <div class="text-center">
+        <button type="button" class="btn bg-gradient-primary mt-3">Read more</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

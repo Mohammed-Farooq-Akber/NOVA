@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="container-fluid py-4">
     <div class="row">
       <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
@@ -8,9 +11,9 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Today's Money</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Expiring Soon</p>
                   <h5 class="font-weight-bolder">
-                    $53,000
+                    10
                   </h5>
                   <p class="mb-0">
                     <span class="text-success text-sm font-weight-bolder">+55%</span>
@@ -33,9 +36,9 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Today's Users</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Waste Prevented</p>
                   <h5 class="font-weight-bolder">
-                    2,300
+                    750 kg 
                   </h5>
                   <p class="mb-0">
                     <span class="text-success text-sm font-weight-bolder">+3%</span>
@@ -58,13 +61,13 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">New Clients</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Impact</p>
                   <h5 class="font-weight-bolder">
-                    +3,462
+                    1,200 kg
                   </h5>
                   <p class="mb-0">
                     <span class="text-danger text-sm font-weight-bolder">-2%</span>
-                    since last quarter
+                    CO₂ emissions .
                   </p>
                 </div>
               </div>
@@ -150,7 +153,7 @@
         <div class="card card-carousel overflow-hidden h-100 p-0">
           <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
             <div class="carousel-inner border-radius-lg h-100">
-              <div class="carousel-item h-100 active" style="background-image: url('../assets/img/carousel-1.jpg');
+              <div class="carousel-item h-100 active" style="background-image: url('{% static 'assets/uploads/waste.png'%}');
     background-size: cover;">
                 <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                   <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
@@ -160,7 +163,8 @@
                   <p>There’s nothing I really wanted to do in life that I wasn’t able to get good at.</p>
                 </div>
               </div>
-              <div class="carousel-item h-100" style="background-image: url('../assets/img/carousel-2.jpg');
+              
+              <div class="carousel-item h-100 active" style="background-image: url('{% static 'assets/uploads/foodwaste.png'%}');
     background-size: cover;">
                 <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                   <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
@@ -170,7 +174,8 @@
                   <p>That’s my skill. I’m not really specifically talented at anything except for the ability to learn.</p>
                 </div>
               </div>
-              <div class="carousel-item h-100" style="background-image: url('../assets/img/carousel-3.jpg');
+              <div class="carousel-item h-100 active" style="background-image: url('{% static 'assets/uploads/waste.png'%}');
+
     background-size: cover;">
                 <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                   <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
@@ -194,119 +199,133 @@
       </div>
     </div>
     <div class="row mt-4">
+      <!-- Bar Chart - Sales by Country (Left Side) -->
       <div class="col-lg-7 mb-lg-0 mb-4">
-        <div class="card ">
+        <div class="card">
           <div class="card-header pb-0 p-3">
             <div class="d-flex justify-content-between">
               <h6 class="mb-2">Sales by Country</h6>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="table align-items-center">
-                <tbody>
-                  {% for item in food_items %}
-                    <tr>
-                      <td class="w-30">
-                        <div class="d-flex px-2 py-1 align-items-center">
-                            <div class="d-flex px-2 py-1">
-                                <div>
-                                  <img src="https://media.istockphoto.com/id/995518546/photo/assortment-of-colorful-ripe-tropical-fruits-top-view.jpg?s=612x612&w=0&k=20&c=bz2zksjSPikOYm9I-mG-f8SAQWVpFsR4M_u4K9soLQ0=" class="avatar avatar-sm me-3">
-                                </div>
-                          <div class="ms-4">
-                            <p class="text-xs font-weight-bold mb-0">Food:</p>
-                            <h6 class="text-sm mb-0">{{ item.name }}</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="text-center">
-                          <p class="text-xs font-weight-bold mb-0">Expiry Date:</p>
-                          <h6 class="text-sm mb-0">{{ item.expiry_date }}</h6>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="text-center">
-                          <p class="text-xs font-weight-bold mb-0">Status:</p>
-                          <h6 class="text-sm mb-0">
-                            <span class="badge {% if item.status == 'expired' %}bg-danger{% elif item.status == 'expiring soon' %}bg-warning{% else %}bg-success{% endif %}">
-                              {{ item.status }}
-                            </span>
-                          </h6>
-                        </div>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+          <div class="card mb-3">
+            <div class="card-body p-3">
+              <div class="chart">
+                <canvas id="bar-chart" class="chart-canvas" height="200px"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    
+      <!-- Pie Chart - Categories (Right Side) -->
       <div class="col-lg-5">
         <div class="card">
           <div class="card-header pb-0 p-3">
             <h6 class="mb-0">Categories</h6>
           </div>
-          <div class="card-body p-3">
-            <ul class="list-group">
-              <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                <div class="d-flex align-items-center">
-                  <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                    <i class="ni ni-mobile-button text-white opacity-10"></i>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <h6 class="mb-1 text-dark text-sm">Devices</h6>
-                    <span class="text-xs">250 in stock, <span class="font-weight-bold">346+ sold</span></span>
-                  </div>
-                </div>
-                <div class="d-flex">
-                  <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></button>
-                </div>
-              </li>
-              <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                <div class="d-flex align-items-center">
-                  <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                    <i class="ni ni-tag text-white opacity-10"></i>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <h6 class="mb-1 text-dark text-sm">Tickets</h6>
-                    <span class="text-xs">123 closed, <span class="font-weight-bold">15 open</span></span>
-                  </div>
-                </div>
-                <div class="d-flex">
-                  <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></button>
-                </div>
-              </li>
-              <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                <div class="d-flex align-items-center">
-                  <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                    <i class="ni ni-box-2 text-white opacity-10"></i>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <h6 class="mb-1 text-dark text-sm">Error logs</h6>
-                    <span class="text-xs">1 is active, <span class="font-weight-bold">40 closed</span></span>
-                  </div>
-                </div>
-                <div class="d-flex">
-                  <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></button>
-                </div>
-              </li>
-              <li class="list-group-item border-0 d-flex justify-content-between ps-0 border-radius-lg">
-                <div class="d-flex align-items-center">
-                  <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                    <i class="ni ni-satisfied text-white opacity-10"></i>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <h6 class="mb-1 text-dark text-sm">Happy users</h6>
-                    <span class="text-xs font-weight-bold">+ 430</span>
-                  </div>
-                </div>
-                <div class="d-flex">
-                  <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></button>
-                </div>
-              </li>
-            </ul>
+          <div class="card mb-3">
+            <div class="card-body p-3">
+              <div class="chart">
+                <canvas id="pie-chart" class="chart-canvas" height="300px"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    
+      
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const data = {
+          labels: ["Fruits", "Vegetables", "Dairy", "Bakery", "Meat & Fish"],  // Food categories
+          datasets: [
+            {
+              label: "Wasted Food (kg)",
+              data: [200, 150, 80, 70, 60],  // Static data values for each category
+              backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff"],
+              borderColor: "#333",
+              borderWidth: 1
+            }
+          ]
+        };
+    
+        const config = {
+          type: "bar",
+          data: data,
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Wastage (kg)"
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: "top"
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return context.raw + " kg";  // Show data in kg
+                  }
+                }
+              }
+            }
+          }
+        };
+    
+        const ctx = document.getElementById("bar-chart").getContext("2d");
+        new Chart(ctx, config);
+      });
+    </script>
+<script>
+  // JavaScript for static data pie chart
+  document.addEventListener("DOMContentLoaded", function () {
+    const data = {
+      labels: ["Fruits", "Vegetables", "Dairy", "Bakery", "Meat & Fish"],
+      datasets: [
+        {
+          label: "Top Wasted Food Categories",
+          data: [30, 20, 15, 18, 17],  // Static data values (e.g., percentages or waste amounts)
+          backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff"],
+          hoverOffset: 4
+        }
+      ]
+    };
+
+    const config = {
+      type: "pie",
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                let label = context.label || "";
+                if (label) {
+                  label += ": ";
+                }
+                label += context.raw + "%";  // Show as percentage
+                return label;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const ctx = document.getElementById("pie-chart").getContext("2d");
+    new Chart(ctx, config);
+  });
+</script>
 {% endblock content %}
