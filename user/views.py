@@ -40,16 +40,13 @@ from django.core.files.storage import FileSystemStorage
 import logging
 from django.http import JsonResponse
 from .models import FoodItem
-
-logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
+load_dotenv()
+# Set up logging for debugging
+logger = logging.getLogger(__name__)
 
-# Access the environment variables
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')# Fetch the GEMINI_API_KEY from environment variables
-API_KEY = os.getenv("GOOGLE_API_KEY")
-print(API_KEY)
-
+# Gemini API Key and Model Configuration
+API_KEY = os.getenv('GEMINI_API_KEY')
 genai.configure(api_key=API_KEY)
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -189,8 +186,11 @@ import numpy as np
 from twilio.rest import Client
 import os 
 
+# Fetch Twilio credentials from environment variables
+account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+auth_token = os.getenv('TWILIO_AUTH_TOKEN')
 
-client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+client = Client(account_sid, auth_token)
 
 def send_twilio_notification():
     message_text = "🍌 Alert! Your banana has started rotting! 🍌 Consider making a recipe today! 😋"
@@ -239,10 +239,9 @@ def gen_frames():
                     stage = "Rotted"
                 elif black_ratio > start_rotting_threshold:
                     stage = "Started Rotting"
-                    if not notification_sent:
-                        pass
-                        # send_twilio_notification()
-                        # notification_sent = True
+                    # if not notification_sent:
+                    #     send_twilio_notification()
+                    #     notification_sent = True
                 else:
                     stage = "Good"
 
@@ -262,3 +261,116 @@ def video_feed(request):
 
 def rotting_index(request):
     return render(request, 'user/rotting.html')
+
+
+def community(request):
+    return render(request, 'user/community.html')
+    
+from django.shortcuts import render
+from django.http import StreamingHttpResponse, JsonResponse
+import cv2
+import time
+from ultralytics import YOLO
+import threading
+
+# Load the YOLOv8 model
+model = YOLO("yolov8n.pt")  # Or use yolov8s.pt, yolov8m.pt, etc.
+model.to('cpu')
+# Define expiry dates for fruits
+expiry_dates = {
+    "apple": "Expiry Date: 12/12/2024",
+    "banana": "Expiry Date: 15/12/2024",
+    "orange": "Expiry Date: 18/12/2024",
+}
+
+# Initialize webcam
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FPS, 30)  # Set FPS to 30 for a smoother feed
+
+# Shared list to store detected objects
+detected_objects = []
+
+def process_frame(frame):
+    global detected_objects
+    # Perform YOLOv8 object detection
+    results = model(frame)
+
+    # Access detection results (boxes, labels, and confidences)
+    boxes = results[0].boxes.xyxy  # Get bounding boxes (x1, y1, x2, y2)
+    labels = results[0].names  # Class labels (e.g., apple, banana)
+    confidences = results[0].boxes.conf  # Confidence score
+
+    detected_objects.clear()  # Clear previous frame's data
+
+    # Loop through detected objects
+    for i, box in enumerate(boxes):
+        # Get the coordinates of the bounding box
+        x1, y1, x2, y2 = map(int, box)  # Convert to integers for drawing
+        label = labels[int(results[0].boxes.cls[i].item())]  # Get the class label
+        confidence = confidences[i].item()  # Get the confidence score
+
+        # Check if it's a fruit we're interested in
+        if label.lower() in expiry_dates:
+            # Draw a visible bounding box around the detected object (yellow)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)  # Yellow color for visibility
+
+            # Prepare text for object name and expiry date
+            label_text = f"{label} - {expiry_dates[label.lower()]}"
+            confidence_text = f"{(confidence * 100):.1f}%"
+
+            # Draw the label and confidence text with larger font size
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 1.0  # Make the text bigger
+            color = (1, 128, 0)  # White text for visibility
+            thickness = 2  # Thickness of the text
+
+            # Draw object name and expiry date above the bounding box
+            cv2.putText(frame, label_text, (x1, y1 - 10), font, font_scale, color, thickness, lineType=cv2.LINE_AA)
+
+            # Draw confidence score below the bounding box
+            cv2.putText(frame, confidence_text, (x1, y2 + 20), font, font_scale, color, thickness, lineType=cv2.LINE_AA)
+
+            # Add object data to detected_objects for the table
+            detected_objects.append({
+                'class': label,
+                'confidence': round(confidence, 2),
+                'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                'expiry': expiry_dates[label.lower()]
+            })
+
+    return frame
+
+def generate_frames():
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame")
+            break
+
+        # Resize frame for faster processing
+        frame_resized = cv2.resize(frame, (640, 480))
+
+        # Process frame (YOLO inference)
+        frame_processed = process_frame(frame_resized)
+
+        # Convert the frame to JPEG
+        ret, buffer = cv2.imencode('.jpg', frame_processed)
+        if not ret:
+            continue
+        frame = buffer.tobytes()
+
+        # Yield the frame in the correct format for streaming
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+# View to render the HTML template
+def index1(request):
+    return render(request, 'user/fruit_detection.html')
+
+# View for video feed
+def video_feed1(request):
+    return StreamingHttpResponse(generate_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+# View for getting detections as JSON
+def get_detections1(request):
+    return JsonResponse(detected_objects, safe=False)
