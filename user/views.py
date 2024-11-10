@@ -122,7 +122,7 @@ def upload_image_and_voice_input(request):
                 image_processed = True
 
             # Return the expiry date as a JSON response
-            return JsonResponse({'expiry_date': str(expiry_date)})
+            return redirect('dashboard')
 
     return render(request, 'user/voice_input_form.html', {
         'expiry_date': expiry_date,
